@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Landing Page</title>
+
+<style>
+body{
+  margin:0;
+  height:100vh;
+  overflow:hidden;
+  background:black;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-family:Arial;
+  color:white;
+}
+
+/* ===== WAVE BACKGROUND ===== */
+.wave{
+  position:absolute;
+  width:300%;
+  height:300%;
+  top:-100%;
+  right:-100%;
+  filter: blur(50px);
+  animation: move linear infinite;
+}
+
+@keyframes move{
+  0% { transform: translate(0,0); }
+  50% { transform: translate(-25%,-25%); }
+  100% { transform: translate(0,0); }
+}
+
+/* ===== CARD ===== */
+.card{
+  position:relative;
+  z-index:2;
+  width:320px;
+  padding:20px;
+  border-radius:14px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  backdrop-filter:blur(12px);
+}
+
+h2{
+  text-align:center;
+  margin-bottom:10px;
+}
+
+input{
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  border:none;
+  border-radius:8px;
+  background:rgba(255,255,255,0.1);
+  color:white;
+}
+
+button{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border:none;
+  border-radius:8px;
+  background:#00ffcc;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+#status{
+  text-align:center;
+  margin-top:10px;
+  font-size:12px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wave" id="wave"></div>
+
+<div class="card">
+  <h2 id="title">Loading...</h2>
+  <div id="form"></div>
+  <button id="submitBtn">Submit</button>
+  <div id="status"></div>
+</div>
+
+<script>
+
+/* ===== BACKGROUND RANDOMIZER ===== */
+const wave = document.getElementById("wave");
+
+// random speed
+wave.style.animationDuration = (6 + Math.random()*10) + "s";
+
+// random colors every 4s
+function randomBg(){
+  const c1 = `rgba(${Math.random()*255},${Math.random()*255},255,0.25)`;
+  const c2 = `rgba(255,${Math.random()*255},${Math.random()*255},0.25)`;
+  const c3 = `rgba(${Math.random()*255},255,${Math.random()*255},0.25)`;
+
+  wave.style.background = `
+    radial-gradient(circle at 30% 30%, ${c1}, transparent 40%),
+    radial-gradient(circle at 70% 60%, ${c2}, transparent 40%),
+    radial-gradient(circle at 40% 80%, ${c3}, transparent 40%)
+  `;
+}
+randomBg();
+setInterval(randomBg, 4000);
+
+/* ===== BACKEND ===== */
+const API = "https://script.google.com/macros/s/AKfycbyVu00PQ3YIfPWeWCAERPAcCoieRUorqv9KuVcvcal5TxEkKZzQOsFUJLOpL5E4Q_axLA/exec";
+
+const id = new URLSearchParams(window.location.search).get("id");
+
+let fields = [];
+
+if(!id){
+  document.getElementById("title").innerText = "No product ID";
+}
+
+/* LOAD PRODUCT */
+fetch(API + "?id=" + id)
+.then(r => r.json())
+.then(data => {
+
+  if(data.error){
+    document.getElementById("title").innerText = "Product not found";
+    return;
+  }
+
+  document.getElementById("title").innerText = data.name;
+
+  fields = data.fields;
+
+  let html = "";
+
+  fields.forEach((f,i)=>{
+    html += `<input id="f${i}" placeholder="${f}">`;
+  });
+
+  document.getElementById("form").innerHTML = html;
+});
+
+/* SEND DATA */
+let sending = false;
+
+function send(){
+
+  if(sending) return;
+  sending = true;
+
+  let values = [];
+
+  fields.forEach((f,i)=>{
+    const el = document.getElementById("f"+i);
+    values.push(el ? el.value : "");
+  });
+
+  fetch(API,{
+    method:"POST",
+    body: JSON.stringify({
+      id:id,
+      values:values
+    })
+  })
+  .then(r=>r.json())
+  .then(()=>{
+    document.getElementById("status").innerText = "Sent ✔";
+    sending = false;
+  })
+  .catch(()=>{
+    document.getElementById("status").innerText = "Error ❌";
+    sending = false;
+  });
+}
+
+/* CONNECT BUTTON */
+window.onload = () => {
+  document.getElementById("submitBtn").addEventListener("click", send);
+};
+
+</script>
+
+</body>
+</html>

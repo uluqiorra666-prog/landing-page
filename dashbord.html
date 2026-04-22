@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Dashboard</title>
+
+<style>
+body{
+  font-family:Arial;
+  background:#0f0f0f;
+  color:white;
+  display:flex;
+  justify-content:center;
+}
+
+.box{
+  width:420px;
+  margin-top:40px;
+  background:#1c1c1c;
+  padding:20px;
+  border-radius:12px;
+}
+
+input{
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  border-radius:8px;
+  border:none;
+}
+
+button{
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  margin-top:8px;
+}
+
+.add{
+  background:#00ffcc;
+  width:100%;
+}
+
+.create{
+  background:#ffffff;
+  width:100%;
+}
+
+.fieldBox{
+  display:flex;
+  gap:5px;
+  margin-top:5px;
+}
+
+.fieldBox input{
+  flex:1;
+}
+
+.del{
+  background:red;
+  color:white;
+}
+
+.copy{
+  background:yellow;
+  width:100%;
+}
+
+#link{
+  word-break: break-all;
+  margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>Create Product</h2>
+
+<input id="name" placeholder="Product name">
+
+<div id="fields"></div>
+
+<button class="add" id="addBtn">+ Add Field</button>
+
+<button class="create" id="createBtn">Create</button>
+
+<p id="link"></p>
+
+<button class="copy" id="copyBtn">Copy Link</button>
+
+</div>
+
+<script>
+
+console.log("Dashboard loaded");
+
+const API = "https://script.google.com/macros/s/AKfycbyVu00PQ3YIfPWeWCAERPAcCoieRUorqv9KuVcvcal5TxEkKZzQOsFUJLOpL5E4Q_axLA/exec";
+const SITE = "https://soft-valkyrie-6b8d90.netlify.app";
+
+let fields = [];
+let lastLink = "";
+let creating = false;
+
+/* ===== ADD FIELD ===== */
+function addField(){
+  console.log("Add field clicked");
+
+  const index = fields.length;
+  fields.push(index);
+
+  const div = document.createElement("div");
+  div.className = "fieldBox";
+  div.id = "box" + index;
+
+  div.innerHTML = `
+    <input id="f${index}" placeholder="Field name">
+    <button class="del" onclick="removeField(${index})">X</button>
+  `;
+
+  document.getElementById("fields").appendChild(div);
+}
+
+/* ===== REMOVE FIELD ===== */
+function removeField(i){
+  const el = document.getElementById("box" + i);
+  if(el) el.remove();
+  fields[i] = null;
+}
+
+/* ===== CREATE PRODUCT ===== */
+function create(){
+
+  console.log("Create clicked");
+
+  if(creating) return;
+  creating = true;
+
+  const name = document.getElementById("name").value.trim();
+
+  if(!name){
+    alert("Enter product name");
+    creating = false;
+    return;
+  }
+
+  let finalFields = [];
+
+  for(let i=0;i<fields.length;i++){
+    const el = document.getElementById("f"+i);
+    if(el && el.value.trim() !== ""){
+      finalFields.push(el.value.trim());
+    }
+  }
+
+  console.log("Sending:", name, finalFields);
+
+  fetch(API,{
+    method:"POST",
+    body: JSON.stringify({
+      name: name,
+      fields: finalFields
+    })
+  })
+  .then(r=>r.json())
+  .then(data=>{
+
+    console.log("Created:", data);
+
+    lastLink = SITE + "/?id=" + data.id;
+
+    document.getElementById("link").innerText = lastLink;
+
+    creating = false;
+  })
+  .catch(err=>{
+    console.log("Error:", err);
+    creating = false;
+  });
+}
+
+/* ===== COPY LINK ===== */
+function copyLink(){
+  if(!lastLink){
+    alert("No link yet");
+    return;
+  }
+
+  navigator.clipboard.writeText(lastLink);
+  alert("Copied!");
+}
+
+/* ===== BUTTON EVENTS ===== */
+document.getElementById("addBtn").addEventListener("click", addField);
+document.getElementById("createBtn").addEventListener("click", create);
+document.getElementById("copyBtn").addEventListener("click", copyLink);
+
+</script>
+
+</body>
+</html>
