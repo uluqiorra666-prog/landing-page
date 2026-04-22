@@ -6,47 +6,68 @@
 
 <style>
 body{
+  margin:0;
   font-family:Arial;
-  background:#0f0f0f;
+  background:linear-gradient(135deg,#0f0f0f,#1a1a1a);
   color:white;
   display:flex;
   justify-content:center;
+  align-items:center;
+  height:100vh;
 }
 
+/* CARD */
 .box{
   width:420px;
-  margin-top:40px;
-  background:#1c1c1c;
-  padding:20px;
-  border-radius:12px;
+  padding:25px;
+  border-radius:16px;
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(15px);
+  border:1px solid rgba(255,255,255,0.1);
+  box-shadow:0 0 40px rgba(0,0,0,0.6);
 }
 
+/* TITLE */
+h2{
+  text-align:center;
+  margin-bottom:15px;
+}
+
+/* INPUTS */
 input{
   width:100%;
-  padding:10px;
-  margin:6px 0;
-  border-radius:8px;
+  padding:12px;
+  margin:8px 0;
   border:none;
+  border-radius:10px;
+  background:rgba(255,255,255,0.08);
+  color:white;
+  outline:none;
 }
 
+/* BUTTONS */
 button{
-  padding:10px;
+  width:100%;
+  padding:12px;
   border:none;
-  border-radius:8px;
+  border-radius:10px;
   cursor:pointer;
-  margin-top:8px;
+  margin-top:10px;
+  font-weight:bold;
 }
 
-.add{
-  background:#00ffcc;
-  width:100%;
+/* BUTTON COLORS */
+.add{ background:#00ffaa; }
+.create{ background:#ffffff; color:black; }
+.copy{ background:#ffd700; color:black; }
+
+.del{
+  background:red;
+  color:white;
+  width:40px;
 }
 
-.create{
-  background:#ffffff;
-  width:100%;
-}
-
+/* FIELD ROW */
 .fieldBox{
   display:flex;
   gap:5px;
@@ -57,19 +78,12 @@ button{
   flex:1;
 }
 
-.del{
-  background:red;
-  color:white;
-}
-
-.copy{
-  background:yellow;
-  width:100%;
-}
-
+/* LINK */
 #link{
-  word-break: break-all;
   margin-top:10px;
+  font-size:12px;
+  word-break:break-all;
+  opacity:0.8;
 }
 </style>
 </head>
@@ -82,21 +96,22 @@ button{
 
 <input id="name" placeholder="Product name">
 
+<!-- NEW PRICE INPUT -->
+<input id="price" placeholder="Price (ex: 2500 DA)">
+
 <div id="fields"></div>
 
-<button class="add" id="addBtn">+ Add Field</button>
+<button class="add" onclick="addField()">+ Add Field</button>
 
-<button class="create" id="createBtn">Create</button>
+<button class="create" onclick="create()">Create</button>
 
 <p id="link"></p>
 
-<button class="copy" id="copyBtn">Copy Link</button>
+<button class="copy" onclick="copyLink()">Copy Link</button>
 
 </div>
 
 <script>
-
-console.log("Dashboard loaded");
 
 const API = "https://script.google.com/macros/s/AKfycbyVu00PQ3YIfPWeWCAERPAcCoieRUorqv9KuVcvcal5TxEkKZzQOsFUJLOpL5E4Q_axLA/exec";
 const SITE = "https://uluqiorra666-prog.github.io/landing-page/";
@@ -105,16 +120,14 @@ let fields = [];
 let lastLink = "";
 let creating = false;
 
-/* ===== ADD FIELD ===== */
+/* ADD FIELD */
 function addField(){
-  console.log("Add field clicked");
-
   const index = fields.length;
   fields.push(index);
 
   const div = document.createElement("div");
   div.className = "fieldBox";
-  div.id = "box" + index;
+  div.id = "box"+index;
 
   div.innerHTML = `
     <input id="f${index}" placeholder="Field name">
@@ -124,30 +137,22 @@ function addField(){
   document.getElementById("fields").appendChild(div);
 }
 
-/* ===== REMOVE FIELD ===== */
+/* REMOVE FIELD */
 function removeField(i){
-  const el = document.getElementById("box" + i);
-  if(el) el.remove();
+  document.getElementById("box"+i).remove();
   fields[i] = null;
 }
 
-/* ===== CREATE PRODUCT ===== */
+/* CREATE PRODUCT */
 function create(){
-
-  console.log("Create clicked");
 
   if(creating) return;
   creating = true;
 
   const name = document.getElementById("name").value.trim();
+  const price = document.getElementById("price").value.trim();
 
-  if(!name){
-    alert("Enter product name");
-    creating = false;
-    return;
-  }
-
-  let finalFields = [];
+  let finalFields = []; // price always first
 
   for(let i=0;i<fields.length;i++){
     const el = document.getElementById("f"+i);
@@ -156,47 +161,36 @@ function create(){
     }
   }
 
-  console.log("Sending:", name, finalFields);
-
   fetch(API,{
     method:"POST",
     body: JSON.stringify({
-      name: name,
+      name:name,
       fields: finalFields
     })
   })
   .then(r=>r.json())
   .then(data=>{
 
-    console.log("Created:", data);
-
     lastLink = SITE + "/?id=" + data.id;
 
     document.getElementById("link").innerText = lastLink;
 
+    // STORE PRICE LOCALLY FOR LP USE
+    localStorage.setItem("price_"+data.id, price);
+
     creating = false;
   })
-  .catch(err=>{
-    console.log("Error:", err);
+  .catch(()=>{
     creating = false;
   });
 }
 
-/* ===== COPY LINK ===== */
+/* COPY LINK */
 function copyLink(){
-  if(!lastLink){
-    alert("No link yet");
-    return;
-  }
-
+  if(!lastLink) return alert("No link yet");
   navigator.clipboard.writeText(lastLink);
   alert("Copied!");
 }
-
-/* ===== BUTTON EVENTS ===== */
-document.getElementById("addBtn").addEventListener("click", addField);
-document.getElementById("createBtn").addEventListener("click", create);
-document.getElementById("copyBtn").addEventListener("click", copyLink);
 
 </script>
 

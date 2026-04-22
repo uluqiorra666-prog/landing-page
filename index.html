@@ -52,13 +52,15 @@ h2{
 }
 
 input{
-  width:100%;
+  width:85%;
   padding:10px;
-  margin:6px 0;
+  margin:6px auto;
   border:none;
   border-radius:8px;
   background:rgba(255,255,255,0.1);
   color:white;
+  display:block;
+  text-align:center;
 }
 
 button{
@@ -136,6 +138,11 @@ fetch(API + "?id=" + id)
   }
 
   document.getElementById("title").innerText = data.name;
+const savedPrice = localStorage.getItem("price_" + id);
+
+if(savedPrice){
+  document.getElementById("title").innerHTML += `<br><span style="color:#00ffcc;font-size:18px">${savedPrice}</span>`;
+}
 
   fields = data.fields;
 
