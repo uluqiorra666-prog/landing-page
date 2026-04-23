@@ -62,6 +62,10 @@ input{
   display:block;
   text-align:center;
 }
+input:focus{
+  outline:2px solid #00ffcc;
+  background:rgba(255,255,255,0.15);
+}
 
 button{
   width:100%;
@@ -117,7 +121,7 @@ randomBg();
 setInterval(randomBg, 4000);
 
 /* ===== BACKEND ===== */
-const API = "https://script.google.com/macros/s/AKfycbyVu00PQ3YIfPWeWCAERPAcCoieRUorqv9KuVcvcal5TxEkKZzQOsFUJLOpL5E4Q_axLA/exec";
+const API = "https://script.google.com/macros/s/AKfycbya_n5FrG1XfrOv7-62No_V_Z385onDRsPMswJd0PHFzrSDCMJIFDtvgTBggl2PqRcZxw/exec";
 
 const id = new URLSearchParams(window.location.search).get("id");
 
@@ -125,6 +129,7 @@ let fields = [];
 
 if(!id){
   document.getElementById("title").innerText = "No product ID";
+
 }
 
 /* LOAD PRODUCT */
@@ -137,11 +142,9 @@ fetch(API + "?id=" + id)
     return;
   }
 
-  document.getElementById("title").innerText = data.name;
-const savedPrice = localStorage.getItem("price_" + id);
-
-if(savedPrice){
-  document.getElementById("title").innerHTML += `<br><span style="color:#00ffcc;font-size:18px">${savedPrice}</span>`;
+  document.getElementById("title").innerHTML =
+  data.name +
+  `<br><span style="color:#00ffcc;font-size:18px">${data.price || ""}</span>`;
 }
 
   fields = data.fields;
@@ -165,10 +168,11 @@ function send(){
 
   let values = [];
 
-  fields.forEach((f,i)=>{
-    const el = document.getElementById("f"+i);
-    values.push(el ? el.value : "");
-  });
+fields.forEach((f,i)=>{
+  if(f.toLowerCase() !== "price"){
+    html += `<input id="f${i}" placeholder="${f}">`;
+  }
+});
 
   fetch(API,{
     method:"POST",

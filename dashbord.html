@@ -16,7 +16,6 @@ body{
   height:100vh;
 }
 
-/* CARD */
 .box{
   width:420px;
   padding:25px;
@@ -27,13 +26,11 @@ body{
   box-shadow:0 0 40px rgba(0,0,0,0.6);
 }
 
-/* TITLE */
 h2{
   text-align:center;
   margin-bottom:15px;
 }
 
-/* INPUTS */
 input{
   width:100%;
   padding:12px;
@@ -45,7 +42,6 @@ input{
   outline:none;
 }
 
-/* BUTTONS */
 button{
   width:100%;
   padding:12px;
@@ -56,7 +52,6 @@ button{
   font-weight:bold;
 }
 
-/* BUTTON COLORS */
 .add{ background:#00ffaa; }
 .create{ background:#ffffff; color:black; }
 .copy{ background:#ffd700; color:black; }
@@ -67,7 +62,6 @@ button{
   width:40px;
 }
 
-/* FIELD ROW */
 .fieldBox{
   display:flex;
   gap:5px;
@@ -78,7 +72,6 @@ button{
   flex:1;
 }
 
-/* LINK */
 #link{
   margin-top:10px;
   font-size:12px;
@@ -95,14 +88,11 @@ button{
 <h2>Create Product</h2>
 
 <input id="name" placeholder="Product name">
-
-<!-- NEW PRICE INPUT -->
 <input id="price" placeholder="Price (ex: 2500 DA)">
 
 <div id="fields"></div>
 
 <button class="add" onclick="addField()">+ Add Field</button>
-
 <button class="create" onclick="create()">Create</button>
 
 <p id="link"></p>
@@ -113,34 +103,25 @@ button{
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbyVu00PQ3YIfPWeWCAERPAcCoieRUorqv9KuVcvcal5TxEkKZzQOsFUJLOpL5E4Q_axLA/exec";
-const SITE = "https://uluqiorra666-prog.github.io/landing-page/";
+const API = "https://script.google.com/macros/s/AKfycbya_n5FrG1XfrOv7-62No_V_Z385onDRsPMswJd0PHFzrSDCMJIFDtvgTBggl2PqRcZxw/exec";
+const SITE = "https://uluqiorra666-prog.github.io/landing-page";
 
-let fields = [];
 let lastLink = "";
 let creating = false;
 
 /* ADD FIELD */
 function addField(){
-  const index = fields.length;
-  fields.push(index);
+  const container = document.getElementById("fields");
 
   const div = document.createElement("div");
   div.className = "fieldBox";
-  div.id = "box"+index;
 
   div.innerHTML = `
-    <input id="f${index}" placeholder="Field name">
-    <button class="del" onclick="removeField(${index})">X</button>
+    <input placeholder="Field name">
+    <button class="del" onclick="this.parentElement.remove()">X</button>
   `;
 
-  document.getElementById("fields").appendChild(div);
-}
-
-/* REMOVE FIELD */
-function removeField(i){
-  document.getElementById("box"+i).remove();
-  fields[i] = null;
+  container.appendChild(div);
 }
 
 /* CREATE PRODUCT */
@@ -152,32 +133,28 @@ function create(){
   const name = document.getElementById("name").value.trim();
   const price = document.getElementById("price").value.trim();
 
-  let finalFields = []; // price always first
+  let finalFields = [];
 
-  for(let i=0;i<fields.length;i++){
-    const el = document.getElementById("f"+i);
-    if(el && el.value.trim() !== ""){
-      finalFields.push(el.value.trim());
+  const inputs = document.querySelectorAll("#fields input");
+
+  inputs.forEach(input => {
+    if(input.value.trim() !== ""){
+      finalFields.push(input.value.trim());
     }
-  }
+  });
 
   fetch(API,{
     method:"POST",
     body: JSON.stringify({
-      name:name,
+      name: name,
+      price: price,
       fields: finalFields
     })
   })
   .then(r=>r.json())
   .then(data=>{
-
     lastLink = SITE + "/?id=" + data.id;
-
     document.getElementById("link").innerText = lastLink;
-
-    // STORE PRICE LOCALLY FOR LP USE
-    localStorage.setItem("price_"+data.id, price);
-
     creating = false;
   })
   .catch(()=>{
