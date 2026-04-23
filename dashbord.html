@@ -103,7 +103,7 @@ button{
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbya_n5FrG1XfrOv7-62No_V_Z385onDRsPMswJd0PHFzrSDCMJIFDtvgTBggl2PqRcZxw/exec";
+const API = "https://script.google.com/macros/s/AKfycbypv3QSTGyl3KbtA8i40XQNUFFAOpDwA35ifW0F9iAnCzfljo4cXMBzJ7LFQTRng8yrTw/exec";
 const SITE = "https://uluqiorra666-prog.github.io/landing-page";
 
 let lastLink = "";
@@ -138,26 +138,31 @@ function create(){
   const inputs = document.querySelectorAll("#fields input");
 
   inputs.forEach(input => {
-    if(input.value.trim() !== ""){
-      finalFields.push(input.value.trim());
+    const val = input.value.trim();
+    if(val !== "" && val.toLowerCase() !== "price"){
+      finalFields.push(val);
     }
   });
 
-  fetch(API,{
-    method:"POST",
+  fetch(API, {
+    method: "POST",
     body: JSON.stringify({
-      name: name,
-      price: price,
+      name,
+      price,
       fields: finalFields
     })
   })
-  .then(r=>r.json())
-  .then(data=>{
+  .then(r => r.json())
+  .then(data => {
+
     lastLink = SITE + "/?id=" + data.id;
+
     document.getElementById("link").innerText = lastLink;
+
     creating = false;
   })
-  .catch(()=>{
+  .catch(() => {
+    document.getElementById("link").innerText = "Error ❌";
     creating = false;
   });
 }

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html>
 <head>
 <meta charset="UTF-8">
@@ -17,7 +17,6 @@ body{
   color:white;
 }
 
-/* ===== WAVE BACKGROUND ===== */
 .wave{
   position:absolute;
   width:300%;
@@ -34,7 +33,6 @@ body{
   100% { transform: translate(0,0); }
 }
 
-/* ===== CARD ===== */
 .card{
   position:relative;
   z-index:2;
@@ -99,13 +97,10 @@ button{
 
 <script>
 
-/* ===== BACKGROUND RANDOMIZER ===== */
+/* ===== BACKGROUND ===== */
 const wave = document.getElementById("wave");
-
-// random speed
 wave.style.animationDuration = (6 + Math.random()*10) + "s";
 
-// random colors every 4s
 function randomBg(){
   const c1 = `rgba(${Math.random()*255},${Math.random()*255},255,0.25)`;
   const c2 = `rgba(255,${Math.random()*255},${Math.random()*255},0.25)`;
@@ -121,7 +116,7 @@ randomBg();
 setInterval(randomBg, 4000);
 
 /* ===== BACKEND ===== */
-const API = "https://script.google.com/macros/s/AKfycbya_n5FrG1XfrOv7-62No_V_Z385onDRsPMswJd0PHFzrSDCMJIFDtvgTBggl2PqRcZxw/exec";
+const API = "https://script.google.com/macros/s/AKfycbypv3QSTGyl3KbtA8i40XQNUFFAOpDwA35ifW0F9iAnCzfljo4cXMBzJ7LFQTRng8yrTw/exec";
 
 const id = new URLSearchParams(window.location.search).get("id");
 
@@ -129,7 +124,6 @@ let fields = [];
 
 if(!id){
   document.getElementById("title").innerText = "No product ID";
-
 }
 
 /* LOAD PRODUCT */
@@ -142,11 +136,12 @@ fetch(API + "?id=" + id)
     return;
   }
 
+  // TITLE + PRICE
   document.getElementById("title").innerHTML =
-  data.name +
-  `<br><span style="color:#00ffcc;font-size:18px">${data.price || ""}</span>`;
-}
+    data.name +
+    `<br><span style="color:#00ffcc;font-size:18px">${data.price || ""}</span>`;
 
+  // FIELDS
   fields = data.fields;
 
   let html = "";
@@ -168,11 +163,10 @@ function send(){
 
   let values = [];
 
-fields.forEach((f,i)=>{
-  if(f.toLowerCase() !== "price"){
-    html += `<input id="f${i}" placeholder="${f}">`;
-  }
-});
+  fields.forEach((f,i)=>{
+    const val = document.getElementById("f"+i).value;
+    values.push(val);
+  });
 
   fetch(API,{
     method:"POST",
@@ -192,10 +186,8 @@ fields.forEach((f,i)=>{
   });
 }
 
-/* CONNECT BUTTON */
-window.onload = () => {
-  document.getElementById("submitBtn").addEventListener("click", send);
-};
+/* BUTTON */
+document.getElementById("submitBtn").addEventListener("click", send);
 
 </script>
 
