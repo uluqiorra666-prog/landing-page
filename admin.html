@@ -1,0 +1,92 @@
+export default {
+  async fetch(request, env) {
+
+    const cors = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type"
+    };
+
+    if (request.method === "OPTIONS") {
+      return new Response(null, { headers: cors });
+    }
+
+    const url = new URL(request.url);
+
+    /* ================= CREATE PRODUCT ================= */
+    if (request.method === "POST") {
+
+      const data = await request.json();
+
+      // CREATE PRODUCT
+      if (data.name) {
+
+        const id = Date.now().toString();
+
+        const product = {
+          id,
+          name: data.name,
+          price: data.price || "",
+          fields: data.fields || []
+        };
+
+        await env.PRODUCTS.put(id, JSON.stringify(product));
+
+        return new Response(JSON.stringify({ id }), {
+          headers: { ...cors, "Content-Type": "application/json" }
+        });
+      }
+
+      // SAVE FORM SUBMISSION
+      if (data.id) {
+
+        const key = "sub_" + data.id;
+
+        let existing = await env.PRODUCTS.get(key);
+        existing = existing ? JSON.parse(existing) : [];
+
+        existing.push(data.values || []);
+
+        await env.PRODUCTS.put(key, JSON.stringify(existing));
+
+        /* 🔥 SEND TO GOOGLE SHEETS */
+        await fetch("PUT_YOUR_GOOGLE_SCRIPT_URL_HERE", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: data.id,
+            values: data.values
+          })
+        });
+
+        return new Response(JSON.stringify({ status: "saved" }), {
+          headers: { ...cors, "Content-Type": "application/json" }
+        });
+      }
+    }
+
+    /* ================= GET PRODUCT ================= */
+    if (request.method === "GET") {
+
+      const id = url.searchParams.get("id");
+
+      if (!id) {
+        return new Response("OK", { headers: cors });
+      }
+
+      const product = await env.PRODUCTS.get(id);
+
+      if (!product) {
+        return new Response(JSON.stringify({ error: "not found" }), {
+          headers: { ...cors, "Content-Type": "application/json" }
+        });
+      }
+
+      return new Response(product, {
+        headers: { ...cors, "Content-Type": "application/json" }
+      });
+    }
+
+    return new Response("Invalid", { headers: cors });
+  }
+};
