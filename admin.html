@@ -1,92 +1,100 @@
-export default {
-  async fetch(request, env) {
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel</title>
 
-    const cors = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type"
-    };
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0f0f0f;
+  color:white;
+  padding:20px;
+}
 
-    if (request.method === "OPTIONS") {
-      return new Response(null, { headers: cors });
-    }
+.card{
+  background:#1c1c1c;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:15px;
+}
 
-    const url = new URL(request.url);
+button{
+  padding:8px;
+  margin:5px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
 
-    /* ================= CREATE PRODUCT ================= */
-    if (request.method === "POST") {
+.del{ background:red; color:white; }
+.view{ background:#00ffcc; }
+</style>
+</head>
 
-      const data = await request.json();
+<body>
 
-      // CREATE PRODUCT
-      if (data.name) {
+<h2>All Products</h2>
+<div id="list"></div>
 
-        const id = Date.now().toString();
+<div id="details"></div>
 
-        const product = {
-          id,
-          name: data.name,
-          price: data.price || "",
-          fields: data.fields || []
-        };
+<script>
 
-        await env.PRODUCTS.put(id, JSON.stringify(product));
+const API = "https://affirilha-backend-8fdf.uluqiorra666.workers.dev";
 
-        return new Response(JSON.stringify({ id }), {
-          headers: { ...cors, "Content-Type": "application/json" }
-        });
-      }
+async function loadProducts(){
+  const res = await fetch(API + "?all=1");
+  const data = await res.json();
 
-      // SAVE FORM SUBMISSION
-      if (data.id) {
+  let html = "";
 
-        const key = "sub_" + data.id;
+  data.forEach(p => {
+    html += `
+      <div class="card">
+        <b>${p.name}</b>
+        <br>
+        <button class="view" onclick="openProduct('${p.id}')">View</button>
+        <button class="del" onclick="deleteProduct('${p.id}')">Delete</button>
+      </div>
+    `;
+  });
 
-        let existing = await env.PRODUCTS.get(key);
-        existing = existing ? JSON.parse(existing) : [];
+  document.getElementById("list").innerHTML = html;
+}
 
-        existing.push(data.values || []);
+async function openProduct(id){
 
-        await env.PRODUCTS.put(key, JSON.stringify(existing));
+  const p = await fetch(API + "?id=" + id).then(r=>r.json());
+  const subs = await fetch(API + "?sub=" + id).then(r=>r.json());
 
-        /* 🔥 SEND TO GOOGLE SHEETS */
-        await fetch("PUT_YOUR_GOOGLE_SCRIPT_URL_HERE", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: data.id,
-            values: data.values
-          })
-        });
+  let html = `
+    <div class="card">
+      <h3>${p.name}</h3>
+      <p>${p.price}</p>
+      <h4>Submissions</h4>
+      <table border="1" width="100%">
+        <tr>${p.fields.map(f=>`<th>${f}</th>`).join("")}</tr>
+  `;
 
-        return new Response(JSON.stringify({ status: "saved" }), {
-          headers: { ...cors, "Content-Type": "application/json" }
-        });
-      }
-    }
+  subs.forEach(s=>{
+    html += `<tr>${s.map(v=>`<td>${v}</td>`).join("")}</tr>`;
+  });
 
-    /* ================= GET PRODUCT ================= */
-    if (request.method === "GET") {
+  html += "</table></div>";
 
-      const id = url.searchParams.get("id");
+  document.getElementById("details").innerHTML = html;
+}
 
-      if (!id) {
-        return new Response("OK", { headers: cors });
-      }
+async function deleteProduct(id){
+  await fetch(API + "?id=" + id, { method:"DELETE" });
+  loadProducts();
+}
 
-      const product = await env.PRODUCTS.get(id);
+loadProducts();
 
-      if (!product) {
-        return new Response(JSON.stringify({ error: "not found" }), {
-          headers: { ...cors, "Content-Type": "application/json" }
-        });
-      }
+</script>
 
-      return new Response(product, {
-        headers: { ...cors, "Content-Type": "application/json" }
-      });
-    }
-
-    return new Response("Invalid", { headers: cors });
-  }
-};
+</body>
+</html>
