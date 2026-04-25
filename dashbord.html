@@ -155,7 +155,7 @@ function create(){
   .then(r => r.json())
   .then(data => {
 
-    lastLink = SITE + "/?id=" + data.id;
+    lastLink = SITE + "/index.html?id=" + data.id;
 
     document.getElementById("link").innerText = lastLink;
 
