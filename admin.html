@@ -4,19 +4,84 @@
 <meta charset="UTF-8">
 <title>Admin</title>
 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-body{background:#0f0f0f;color:white;font-family:Arial;padding:20px}
-.card{background:#1c1c1c;padding:15px;margin-bottom:10px;border-radius:10px}
-button{margin:5px;padding:6px;border:none;border-radius:6px;cursor:pointer}
-.view{background:#00ffcc}
-.del{background:red;color:white}
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0f0f0f;
+  color:white;
+  padding:15px;
+}
+
+h2{
+  margin:10px 0;
+  font-size:18px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+}
+
+.card{
+  background:#1c1c1c;
+  padding:15px;
+  border-radius:12px;
+  box-shadow:0 0 10px rgba(0,0,0,0.4);
+}
+
+.name{
+  font-weight:bold;
+  font-size:16px;
+}
+
+.actions{
+  margin-top:10px;
+}
+
+button{
+  padding:8px 10px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:12px;
+}
+
+.view{ background:#00ffcc; }
+.del{ background:#ff4444; color:white; }
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+  font-size:12px;
+}
+
+th,td{
+  padding:6px;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+  text-align:center;
+}
+
+th{
+  color:#00ffcc;
+}
+
+@media(min-width:700px){
+  .grid{
+    grid-template-columns:1fr 1fr;
+  }
+}
 </style>
 </head>
 
 <body>
 
 <h2>Products</h2>
-<div id="list"></div>
+<div id="list" class="grid"></div>
 
 <h2>Details</h2>
 <div id="details"></div>
@@ -34,9 +99,11 @@ async function load(){
   data.forEach(p=>{
     html += `
       <div class="card">
-        <b>${p.name}</b><br>
-        <button class="view" onclick="openP('${p.id}')">View</button>
-        <button class="del" onclick="delP('${p.id}')">Delete</button>
+        <div class="name">${p.name}</div>
+        <div class="actions">
+          <button class="view" onclick="openP('${p.id}')">View</button>
+          <button class="del" onclick="delP('${p.id}')">Delete</button>
+        </div>
       </div>
     `;
   });
@@ -51,10 +118,10 @@ async function openP(id){
 
   let html = `
     <div class="card">
-    <h3>${p.name}</h3>
-    <p>${p.price}</p>
-    <table border="1" width="100%">
-    <tr>${p.fields.map(f=>`<th>${f}</th>`).join("")}</tr>
+      <h3>${p.name}</h3>
+      <p>${p.price}</p>
+      <table>
+        <tr>${p.fields.map(f=>`<th>${f}</th>`).join("")}</tr>
   `;
 
   s.forEach(r=>{
@@ -67,7 +134,7 @@ async function openP(id){
 }
 
 async function delP(id){
-  if(!confirm("Delete?")) return;
+  if(!confirm("Delete product + submissions?")) return;
 
   await fetch(API + "?id="+id,{method:"DELETE"});
   load();

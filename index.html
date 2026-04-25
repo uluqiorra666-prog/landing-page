@@ -1,22 +1,25 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <title>Landing Page</title>
 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
 body{
   margin:0;
-  height:100vh;
-  overflow:hidden;
+  min-height:100vh;
   background:black;
   display:flex;
   justify-content:center;
   align-items:center;
   font-family:Arial;
   color:white;
+  padding:15px;
 }
 
+/* BACKGROUND */
 .wave{
   position:absolute;
   width:300%;
@@ -25,6 +28,7 @@ body{
   right:-100%;
   filter: blur(50px);
   animation: move linear infinite;
+  z-index:0;
 }
 
 @keyframes move{
@@ -33,53 +37,81 @@ body{
   100% { transform: translate(0,0); }
 }
 
+/* CARD */
 .card{
   position:relative;
   z-index:2;
-  width:320px;
+  width:100%;
+  max-width:400px;
   padding:20px;
-  border-radius:14px;
+  border-radius:16px;
   background:rgba(255,255,255,0.05);
   border:1px solid rgba(255,255,255,0.1);
   backdrop-filter:blur(12px);
+  box-shadow:0 0 30px rgba(0,0,0,0.6);
 }
 
 h2{
   text-align:center;
   margin-bottom:10px;
+  font-size:18px;
 }
 
+/* INPUTS */
 input{
-  width:85%;
-  padding:10px;
-  margin:6px auto;
+  width:100%;
+  padding:12px;
+  margin:8px 0;
   border:none;
-  border-radius:8px;
+  border-radius:10px;
   background:rgba(255,255,255,0.1);
   color:white;
-  display:block;
   text-align:center;
+  font-size:14px;
 }
+
 input:focus{
   outline:2px solid #00ffcc;
   background:rgba(255,255,255,0.15);
 }
 
+/* BUTTON */
 button{
   width:100%;
-  padding:10px;
+  padding:12px;
   margin-top:10px;
   border:none;
-  border-radius:8px;
+  border-radius:10px;
   background:#00ffcc;
   font-weight:bold;
+  font-size:14px;
   cursor:pointer;
 }
 
+/* STATUS */
 #status{
   text-align:center;
   margin-top:10px;
   font-size:12px;
+}
+
+/* DESKTOP ENHANCEMENT */
+@media(min-width:768px){
+  h2{
+    font-size:20px;
+  }
+
+  .card{
+    padding:25px;
+  }
+
+  input{
+    font-size:15px;
+  }
+
+  button{
+    font-size:15px;
+  }
 }
 </style>
 </head>
@@ -136,12 +168,10 @@ fetch(API + "?id=" + id)
     return;
   }
 
-  // TITLE + PRICE
   document.getElementById("title").innerHTML =
     data.name +
-    `<br><span style="color:#00ffcc;font-size:18px">${data.price || ""}</span>`;
+    `<br><span style="color:#00ffcc;font-size:16px">${data.price || ""}</span>`;
 
-  // FIELDS
   fields = data.fields;
 
   let html = "";
@@ -186,7 +216,6 @@ function send(){
   });
 }
 
-/* BUTTON */
 document.getElementById("submitBtn").addEventListener("click", send);
 
 </script>
