@@ -72,10 +72,11 @@ button{
   flex:1;
 }
 
-#link{
+/* hidden status instead of raw link */
+#status{
   margin-top:10px;
   font-size:12px;
-  word-break:break-all;
+  text-align:center;
   opacity:0.8;
 }
 </style>
@@ -95,9 +96,10 @@ button{
 <button class="add" onclick="addField()">+ Add Field</button>
 <button class="create" onclick="create()">Create</button>
 
-<p id="link"></p>
+<p id="status"></p>
 
 <button class="copy" onclick="copyLink()">Copy Link</button>
+<button class="create" onclick="openPage()">Open Page</button>
 
 </div>
 
@@ -157,21 +159,27 @@ function create(){
 
     lastLink = SITE + "/index.html?id=" + data.id;
 
-    document.getElementById("link").innerText = lastLink;
+    document.getElementById("status").innerText = "Product ready ✔";
 
     creating = false;
   })
   .catch(() => {
-    document.getElementById("link").innerText = "Error ❌";
+    document.getElementById("status").innerText = "Error ❌";
     creating = false;
   });
 }
 
 /* COPY LINK */
 function copyLink(){
-  if(!lastLink) return alert("No link yet");
+  if(!lastLink) return alert("Create a product first");
   navigator.clipboard.writeText(lastLink);
   alert("Copied!");
+}
+
+/* OPEN PAGE */
+function openPage(){
+  if(!lastLink) return alert("Create a product first");
+  window.open(lastLink, "_blank");
 }
 
 </script>

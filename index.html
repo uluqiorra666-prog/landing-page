@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
-<head>
+<head> 
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <meta charset="UTF-8">
 <title>Landing Page</title>
 
@@ -14,47 +15,62 @@ body{
   display:flex;
   justify-content:center;
   align-items:center;
-  font-family:Arial;
+  font-family:'Inter', sans-serif;
   color:white;
   padding:15px;
+  overflow:hidden;
 }
 
-/* BACKGROUND */
+/* ===== PREMIUM BACKGROUND ===== */
 .wave{
   position:absolute;
   width:300%;
   height:300%;
   top:-100%;
   right:-100%;
-  filter: blur(50px);
-  animation: move linear infinite;
+  filter: blur(65px);
+  opacity:1;
   z-index:0;
 }
 
-@keyframes move{
-  0% { transform: translate(0,0); }
-  50% { transform: translate(-25%,-25%); }
-  100% { transform: translate(0,0); }
-}
-
-/* CARD */
+/* CARD FLOAT EFFECT */
 .card{
   position:relative;
   z-index:2;
   width:100%;
-  max-width:400px;
-  padding:20px;
-  border-radius:16px;
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.1);
-  backdrop-filter:blur(12px);
-  box-shadow:0 0 30px rgba(0,0,0,0.6);
+  max-width:420px;
+  padding:22px;
+  border-radius:18px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  backdrop-filter:blur(14px);
+  box-shadow:0 0 40px rgba(0,0,0,0.6);
+  animation: float 6s ease-in-out infinite;
+}
+
+/* soft float */
+@keyframes float{
+  0%,100% { transform:translateY(0px); }
+  50% { transform:translateY(-6px); }
 }
 
 h2{
   text-align:center;
-  margin-bottom:10px;
+  margin-bottom:12px;
   font-size:18px;
+  position:relative;
+}
+
+/* glow line under title */
+h2::after{
+  content:"";
+  display:block;
+  width:60px;
+  height:2px;
+  background:#00ffcc;
+  margin:8px auto 0;
+  border-radius:10px;
+  opacity:0.7;
 }
 
 /* INPUTS */
@@ -68,24 +84,32 @@ input{
   color:white;
   text-align:center;
   font-size:14px;
+  transition:0.2s;
 }
 
 input:focus{
   outline:2px solid #00ffcc;
-  background:rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.16);
+  transform:scale(1.01);
 }
 
 /* BUTTON */
 button{
   width:100%;
   padding:12px;
-  margin-top:10px;
+  margin-top:12px;
   border:none;
   border-radius:10px;
-  background:#00ffcc;
+  background:linear-gradient(90deg,#00ffcc,#00d4ff);
   font-weight:bold;
   font-size:14px;
   cursor:pointer;
+  transition:0.2s;
+}
+
+button:hover{
+  transform:scale(1.02);
+  box-shadow:0 0 15px rgba(0,255,204,0.3);
 }
 
 /* STATUS */
@@ -93,24 +117,17 @@ button{
   text-align:center;
   margin-top:10px;
   font-size:12px;
+  opacity:0.8;
 }
 
-/* DESKTOP ENHANCEMENT */
-@media(min-width:768px){
-  h2{
-    font-size:20px;
-  }
-
+/* MOBILE OPTIMIZED */
+@media(max-width:600px){
   .card{
-    padding:25px;
+    padding:18px;
   }
 
-  input{
-    font-size:15px;
-  }
-
-  button{
-    font-size:15px;
+  h2{
+    font-size:17px;
   }
 }
 </style>
@@ -129,23 +146,36 @@ button{
 
 <script>
 
-/* ===== BACKGROUND ===== */
+/* ===== SMOOTH BACKGROUND (FIXED & STRONG) ===== */
 const wave = document.getElementById("wave");
-wave.style.animationDuration = (6 + Math.random()*10) + "s";
+let t = 0;
 
-function randomBg(){
-  const c1 = `rgba(${Math.random()*255},${Math.random()*255},255,0.25)`;
-  const c2 = `rgba(255,${Math.random()*255},${Math.random()*255},0.25)`;
-  const c3 = `rgba(${Math.random()*255},255,${Math.random()*255},0.25)`;
+function animate(){
+
+  t += 0.0035;
+
+  const r1 = Math.floor(40 + 215*Math.sin(t));
+  const g1 = Math.floor(40 + 215*Math.sin(t*1.2));
+  const b1 = 255;
+
+  const r2 = 255;
+  const g2 = Math.floor(40 + 215*Math.sin(t*1.1));
+  const b2 = Math.floor(40 + 215*Math.sin(t*0.9));
+
+  const r3 = Math.floor(40 + 215*Math.sin(t*0.8));
+  const g3 = 255;
+  const b3 = Math.floor(40 + 215*Math.sin(t*1.4));
 
   wave.style.background = `
-    radial-gradient(circle at 30% 30%, ${c1}, transparent 40%),
-    radial-gradient(circle at 70% 60%, ${c2}, transparent 40%),
-    radial-gradient(circle at 40% 80%, ${c3}, transparent 40%)
+    radial-gradient(circle at 30% 30%, rgba(${r1},${g1},${b1},0.38), transparent 45%),
+    radial-gradient(circle at 70% 60%, rgba(${r2},${g2},${b2},0.38), transparent 45%),
+    radial-gradient(circle at 40% 80%, rgba(${r3},${g3},${b3},0.38), transparent 45%)
   `;
+
+  requestAnimationFrame(animate);
 }
-randomBg();
-setInterval(randomBg, 4000);
+
+animate();
 
 /* ===== BACKEND ===== */
 const API = "https://affirilha-backend-8fdf.uluqiorra666.workers.dev";
@@ -170,7 +200,7 @@ fetch(API + "?id=" + id)
 
   document.getElementById("title").innerHTML =
     data.name +
-    `<br><span style="color:#00ffcc;font-size:16px">${data.price || ""}</span>`;
+    `<br><span style="color:#00ffcc;font-size:15px">${data.price || ""}</span>`;
 
   fields = data.fields;
 
