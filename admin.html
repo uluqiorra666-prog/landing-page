@@ -2,61 +2,41 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel</title>
+<title>Admin</title>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#0f0f0f;
-  color:white;
-  padding:20px;
-}
-
-.card{
-  background:#1c1c1c;
-  padding:15px;
-  border-radius:12px;
-  margin-bottom:15px;
-}
-
-button{
-  padding:8px;
-  margin:5px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-}
-
-.del{ background:red; color:white; }
-.view{ background:#00ffcc; }
+body{background:#0f0f0f;color:white;font-family:Arial;padding:20px}
+.card{background:#1c1c1c;padding:15px;margin-bottom:10px;border-radius:10px}
+button{margin:5px;padding:6px;border:none;border-radius:6px;cursor:pointer}
+.view{background:#00ffcc}
+.del{background:red;color:white}
 </style>
 </head>
 
 <body>
 
-<h2>All Products</h2>
+<h2>Products</h2>
 <div id="list"></div>
 
+<h2>Details</h2>
 <div id="details"></div>
 
 <script>
 
-const API = "https://affirilha-backend-8fdf.uluqiorra666.workers.dev";
+const API = "https://affirilha-backend-8fdf.uluqiorra666.workers.dev/";
 
-async function loadProducts(){
+async function load(){
   const res = await fetch(API + "?all=1");
   const data = await res.json();
 
   let html = "";
 
-  data.forEach(p => {
+  data.forEach(p=>{
     html += `
       <div class="card">
-        <b>${p.name}</b>
-        <br>
-        <button class="view" onclick="openProduct('${p.id}')">View</button>
-        <button class="del" onclick="deleteProduct('${p.id}')">Delete</button>
+        <b>${p.name}</b><br>
+        <button class="view" onclick="openP('${p.id}')">View</button>
+        <button class="del" onclick="delP('${p.id}')">Delete</button>
       </div>
     `;
   });
@@ -64,22 +44,21 @@ async function loadProducts(){
   document.getElementById("list").innerHTML = html;
 }
 
-async function openProduct(id){
+async function openP(id){
 
-  const p = await fetch(API + "?id=" + id).then(r=>r.json());
-  const subs = await fetch(API + "?sub=" + id).then(r=>r.json());
+  const p = await fetch(API + "?id="+id).then(r=>r.json());
+  const s = await fetch(API + "?sub="+id).then(r=>r.json());
 
   let html = `
     <div class="card">
-      <h3>${p.name}</h3>
-      <p>${p.price}</p>
-      <h4>Submissions</h4>
-      <table border="1" width="100%">
-        <tr>${p.fields.map(f=>`<th>${f}</th>`).join("")}</tr>
+    <h3>${p.name}</h3>
+    <p>${p.price}</p>
+    <table border="1" width="100%">
+    <tr>${p.fields.map(f=>`<th>${f}</th>`).join("")}</tr>
   `;
 
-  subs.forEach(s=>{
-    html += `<tr>${s.map(v=>`<td>${v}</td>`).join("")}</tr>`;
+  s.forEach(r=>{
+    html += `<tr>${r.map(v=>`<td>${v}</td>`).join("")}</tr>`;
   });
 
   html += "</table></div>";
@@ -87,12 +66,15 @@ async function openProduct(id){
   document.getElementById("details").innerHTML = html;
 }
 
-async function deleteProduct(id){
-  await fetch(API + "?id=" + id, { method:"DELETE" });
-  loadProducts();
+async function delP(id){
+  if(!confirm("Delete?")) return;
+
+  await fetch(API + "?id="+id,{method:"DELETE"});
+  load();
+  document.getElementById("details").innerHTML="";
 }
 
-loadProducts();
+load();
 
 </script>
 
