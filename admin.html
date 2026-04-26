@@ -2,28 +2,22 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel</title>
+<title>Admin</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
 body{
   margin:0;
   font-family:'Inter', sans-serif;
-  background:#0b0c10;
-  color:white;
+  background:#f5f7fb;
+  color:#222;
   padding:20px;
 }
 
 /* HEADER */
-h2{
-  margin-bottom:15px;
-  font-size:22px;
-}
-
-/* INPUT AREA */
 .top{
   display:flex;
   gap:10px;
@@ -31,109 +25,69 @@ h2{
 }
 
 input{
-  flex:1;
-  padding:12px;
-  border-radius:10px;
-  border:none;
-  background:#1a1c22;
-  color:white;
-  outline:none;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  width:220px;
 }
 
 button{
-  padding:12px 14px;
+  padding:10px 14px;
   border:none;
-  border-radius:10px;
+  border-radius:8px;
   cursor:pointer;
-  font-weight:600;
+  font-weight:500;
 }
 
-/* MAIN BUTTON */
-.load{
-  background:#00ffcc;
-  color:black;
-}
-
-/* CARD */
-.card{
-  background:#151821;
-  border:1px solid rgba(255,255,255,0.08);
-  border-radius:14px;
-  padding:15px;
-  margin-top:15px;
-}
-
-/* PRODUCT HEADER */
-.productHeader{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:10px;
-}
-
-.title{
-  font-size:18px;
-  font-weight:600;
-}
-
-.price{
-  color:#00ffcc;
-}
+.load{ background:#4CAF50; color:white; }
+.del{ background:#ff4d4d; color:white; }
 
 /* TABLE */
 table{
   width:100%;
   border-collapse:collapse;
-  margin-top:10px;
-  font-size:13px;
-}
-
-th,td{
-  padding:8px;
-  border-bottom:1px solid rgba(255,255,255,0.08);
-  text-align:center;
-  color:#ddd;
+  background:white;
+  border-radius:10px;
+  overflow:hidden;
+  box-shadow:0 5px 20px rgba(0,0,0,0.05);
 }
 
 th{
-  color:#00ffcc;
+  background:#4CAF50;
+  color:white;
+  padding:12px;
+  font-weight:600;
 }
 
-/* ACTION BUTTONS */
+td{
+  padding:10px;
+  border-bottom:1px solid #eee;
+  text-align:center;
+}
+
+tr:hover{
+  background:#f1f5ff;
+}
+
 .actions{
+  margin-top:10px;
   display:flex;
   gap:10px;
-  margin-top:10px;
-}
-
-.danger{
-  background:#ff3b3b;
-  color:white;
-}
-
-.secondary{
-  background:#2a2d3a;
-  color:white;
-}
-
-.empty{
-  opacity:0.6;
-  text-align:center;
-  padding:20px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Admin Dashboard</h2>
+<h2>Admin Panel</h2>
 
 <div class="top">
-  <input id="productId" placeholder="Enter product ID">
+  <input id="productId" placeholder="Product ID">
   <button class="load" onclick="load()">Load</button>
 </div>
 
-<div id="content"></div>
+<div id="actions"></div>
+<div id="table"></div>
 
 <script>
 
@@ -144,83 +98,66 @@ async function load(){
   const id = document.getElementById("productId").value.trim();
   if(!id) return alert("Enter ID");
 
-  const res1 = await fetch(API + "?id=" + id);
-  const product = await res1.json();
+  const product = await fetch(API + "?id=" + id).then(r=>r.json());
 
   if(product.error){
-    document.getElementById("content").innerHTML =
-      `<div class="card">Product not found</div>`;
+    document.getElementById("table").innerHTML = "Product not found";
     return;
   }
 
-  const res2 = await fetch(API + "?sub=" + id);
-  let subs = await res2.json();
+  let subs = await fetch(API + "?sub=" + id).then(r=>r.json());
   subs = subs || [];
 
-  let html = `
-  <div class="card">
-
-    <div class="productHeader">
-      <div class="title">${product.name}</div>
-      <div class="price">${product.price || ""}</div>
-    </div>
-
+  // ACTION BUTTONS
+  document.getElementById("actions").innerHTML = `
     <div class="actions">
-      <button class="danger" onclick="deleteProduct('${id}')">Delete Product</button>
+      <button class="del" onclick="deleteProduct('${id}')">Delete Product</button>
     </div>
-
-    <table>
-      <tr>
-        ${product.fields.map(f => `<th>${f}</th>`).join("")}
-        <th>Action</th>
-      </tr>
   `;
 
-  if(subs.length === 0){
-    html += `<tr><td colspan="100%" class="empty">No submissions yet</td></tr>`;
-  } else {
+  // TABLE
+  let html = `<table><tr>`;
 
-    subs.forEach((row, index)=>{
-      html += `
-      <tr>
-        ${row.map(v=>`<td>${v}</td>`).join("")}
-        <td>
-          <button class="danger" onclick="deleteSub('${id}',${index})">X</button>
-        </td>
-      </tr>
-      `;
+  product.fields.forEach(f=>{
+    html += `<th>${f}</th>`;
+  });
+
+  html += `<th>Delete</th></tr>`;
+
+  subs.forEach((row,i)=>{
+    html += `<tr>`;
+    row.forEach(v=>{
+      html += `<td>${v}</td>`;
     });
-  }
+    html += `<td><button class="del" onclick="deleteSub('${id}',${i})">X</button></td></tr>`;
+  });
 
-  html += `</table></div>`;
+  html += `</table>`;
 
-  document.getElementById("content").innerHTML = html;
+  document.getElementById("table").innerHTML = html;
 }
 
 /* DELETE PRODUCT */
 async function deleteProduct(id){
-  if(!confirm("Delete this product?")) return;
+  if(!confirm("Delete product?")) return;
 
-  await fetch(API, {
+  await fetch(API,{
     method:"POST",
-    body: JSON.stringify({
-      deleteProduct:id
-    })
+    body:JSON.stringify({ deleteProduct:id })
   });
 
-  document.getElementById("content").innerHTML = "";
-  alert("Deleted");
+  location.reload();
 }
 
-/* DELETE SUBMISSION */
-async function deleteSub(id, index){
+/* DELETE SUB */
+async function deleteSub(id,i){
 
-  await fetch(API, {
+  await fetch(API,{
     method:"POST",
-    body: JSON.stringify({
+    body:JSON.stringify({
       deleteSub:true,
       id,
-      index
+      index:i
     })
   });
 
