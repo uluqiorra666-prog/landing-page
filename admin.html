@@ -12,146 +12,135 @@
 body{
   margin:0;
   font-family:'Inter', sans-serif;
-  background:#f5f7fb;
-  color:#222;
+  background:#0b0f1a;
+  color:white;
   padding:20px;
 }
 
-/* HEADER */
-.top{
-  display:flex;
-  gap:10px;
+/* TITLE */
+h2{
   margin-bottom:20px;
 }
 
-input{
-  padding:10px;
-  border-radius:8px;
-  border:1px solid #ccc;
-  width:220px;
+/* PRODUCT BLOCK */
+.block{
+  margin-bottom:30px;
 }
 
-button{
-  padding:10px 14px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  font-weight:500;
+/* PRODUCT HEADER */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:8px;
 }
 
-.load{ background:#4CAF50; color:white; }
-.del{ background:#ff4d4d; color:white; }
+.name{
+  font-size:16px;
+  font-weight:600;
+}
+
+.price{
+  color:#00ffcc;
+}
 
 /* TABLE */
 table{
   width:100%;
   border-collapse:collapse;
-  background:white;
+  background:#111827;
   border-radius:10px;
   overflow:hidden;
-  box-shadow:0 5px 20px rgba(0,0,0,0.05);
 }
 
 th{
-  background:#4CAF50;
-  color:white;
-  padding:12px;
-  font-weight:600;
+  background:#00ffcc;
+  color:black;
+  padding:10px;
 }
 
 td{
-  padding:10px;
-  border-bottom:1px solid #eee;
+  padding:8px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
   text-align:center;
 }
 
 tr:hover{
-  background:#f1f5ff;
+  background:#1f2937;
 }
 
-.actions{
-  margin-top:10px;
-  display:flex;
-  gap:10px;
+/* BUTTONS */
+.btn{
+  padding:6px 10px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:12px;
+}
+
+.del{
+  background:#ff4d4d;
+  color:white;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Admin Panel</h2>
+<h2>All Products</h2>
 
-<div class="top">
-  <input id="productId" placeholder="Product ID">
-  <button class="load" onclick="load()">Load</button>
-</div>
-
-<div id="actions"></div>
-<div id="table"></div>
+<div id="content"></div>
 
 <script>
 
 const API = "https://affirilha-backend-8fdf.uluqiorra666.workers.dev";
 
-async function load(){
+async function loadAll(){
 
-  const id = document.getElementById("productId").value.trim();
-  if(!id) return alert("Enter ID");
+  const list = await fetch(API + "?all=1").then(r=>r.json());
 
-  const product = await fetch(API + "?id=" + id).then(r=>r.json());
+  let html = "";
 
-  if(product.error){
-    document.getElementById("table").innerHTML = "Product not found";
-    return;
+  for(const p of list){
+
+    const product = await fetch(API + "?id=" + p.id).then(r=>r.json());
+    let subs = await fetch(API + "?sub=" + p.id).then(r=>r.json());
+    subs = subs || [];
+
+    html += `
+    <div class="block">
+
+      <div class="header">
+        <div class="name">${product.name}</div>
+        <div class="price">${product.price || ""}</div>
+      </div>
+
+      <table>
+        <tr>
+          ${product.fields.map(f=>`<th>${f}</th>`).join("")}
+          <th>Delete</th>
+        </tr>
+    `;
+
+    if(subs.length === 0){
+      html += `<tr><td colspan="100%">No submissions</td></tr>`;
+    }
+
+    subs.forEach((row,i)=>{
+      html += `<tr>
+        ${row.map(v=>`<td>${v}</td>`).join("")}
+        <td><button class="btn del" onclick="deleteSub('${p.id}',${i})">X</button></td>
+      </tr>`;
+    });
+
+    html += `</table></div>`;
   }
 
-  let subs = await fetch(API + "?sub=" + id).then(r=>r.json());
-  subs = subs || [];
-
-  // ACTION BUTTONS
-  document.getElementById("actions").innerHTML = `
-    <div class="actions">
-      <button class="del" onclick="deleteProduct('${id}')">Delete Product</button>
-    </div>
-  `;
-
-  // TABLE
-  let html = `<table><tr>`;
-
-  product.fields.forEach(f=>{
-    html += `<th>${f}</th>`;
-  });
-
-  html += `<th>Delete</th></tr>`;
-
-  subs.forEach((row,i)=>{
-    html += `<tr>`;
-    row.forEach(v=>{
-      html += `<td>${v}</td>`;
-    });
-    html += `<td><button class="del" onclick="deleteSub('${id}',${i})">X</button></td></tr>`;
-  });
-
-  html += `</table>`;
-
-  document.getElementById("table").innerHTML = html;
-}
-
-/* DELETE PRODUCT */
-async function deleteProduct(id){
-  if(!confirm("Delete product?")) return;
-
-  await fetch(API,{
-    method:"POST",
-    body:JSON.stringify({ deleteProduct:id })
-  });
-
-  location.reload();
+  document.getElementById("content").innerHTML = html;
 }
 
 /* DELETE SUB */
 async function deleteSub(id,i){
-
   await fetch(API,{
     method:"POST",
     body:JSON.stringify({
@@ -161,8 +150,10 @@ async function deleteSub(id,i){
     })
   });
 
-  load();
+  loadAll();
 }
+
+loadAll();
 
 </script>
 
